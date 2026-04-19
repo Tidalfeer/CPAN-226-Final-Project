@@ -7,7 +7,7 @@ smolagents>=0.1.0
 # Network testing
 pythonping>=1.1.4
 
-# FastAPI Server (replaces Flask)
+# FastAPI Server 
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 
