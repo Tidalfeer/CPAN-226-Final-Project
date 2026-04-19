@@ -1,0 +1,15 @@
+# Core dependencies
+pyyaml>=6.0
+requests>=2.31.0
+colorama>=0.4.6
+smolagents>=0.1.0
+
+# Network testing
+pythonping>=1.1.4
+
+# FastAPI Server (replaces Flask)
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Optional: for production
+waitress>=2.1.0

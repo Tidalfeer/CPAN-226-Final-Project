@@ -1,0 +1,22 @@
+network:
+  primary_interface: "Ethernet"
+  backup_interface: "Wi-Fi"
+  primary_gateway: "192.168.1.1"
+  backup_gateway: "192.168.2.1"
+  test_target: "8.8.8.8"
+
+thresholds:
+  packet_loss_max: 5.0
+  latency_max_ms: 100.0
+  jitter_max_ms: 30.0
+
+agent:
+  check_interval_seconds: 5
+  stability_period_seconds: 15
+  use_local_llm: true
+  llm_model: "llama3.2:1b"
+  verbose: true
+
+mock_server:
+  enabled: true
+  url: "http://127.0.0.1:5001"
