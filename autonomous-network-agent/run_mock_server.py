@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Standalone FastAPI Mock Network Server
-No Flask dependencies - completely self-contained
 """
 
 from fastapi import FastAPI, Request
