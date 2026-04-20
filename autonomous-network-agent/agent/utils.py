@@ -39,7 +39,7 @@ def print_banner():
     banner = f"""
 {Fore.CYAN}{Style.BRIGHT}
 ╔══════════════════════════════════════════════════════════════╗
-║     AUTONOMOUS NETWORK RESILIENCE AGENT (ANRA) v1.0         ║
+║     AUTONOMOUS NETWORK RESILIENCE AGENT (ANRA) v1.0          ║
 ║                  Agentic AI Class Project                    ║
 ╚══════════════════════════════════════════════════════════════╝
 {Style.RESET_ALL}
