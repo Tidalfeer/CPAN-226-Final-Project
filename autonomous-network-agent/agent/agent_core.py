@@ -61,7 +61,7 @@ class NetworkResilienceAgent:
         except Exception as e:
             print_status(f"Error pulling model: {e}", "error")
     
-    def _call_ollama(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+    def _call_ollama(self, prompt: str, system_prompt: [str] = None) -> str:
         """Call Ollama API directly using the generate endpoint."""
         try:
             full_prompt = prompt
@@ -100,7 +100,7 @@ class NetworkResilienceAgent:
             self.logger.error(f"Unexpected error calling Ollama: {e}")
             return f"ERROR: {str(e)}"
     
-    def get_decision(self, metrics: dict, current_status: dict, backup_metrics: Optional[dict] = None) -> str:
+    def get_decision(self, metrics: dict, current_status: dict, backup_metrics: [dict] = None) -> str:
         """
         Get a decision from the LLM based on current metrics and status.
         
