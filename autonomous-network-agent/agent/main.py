@@ -41,6 +41,12 @@ def check_health(metrics, config, debug=False):
     latency = metrics.get('avg_latency_ms', 0)
     status = metrics.get('status', 'unknown')
     
+    # DEBUG: Always print what we're checking
+    print(f"    DEBUG check_health received:")
+    print(f"      packet_loss: {packet_loss}")
+    print(f"      latency: {latency}")
+    print(f"      status: '{status}'")
+    
     loss_ok = packet_loss <= config['thresholds']['packet_loss_max']
     latency_ok = latency <= config['thresholds']['latency_max_ms']
     status_ok = status == 'healthy'
@@ -48,11 +54,10 @@ def check_health(metrics, config, debug=False):
     is_healthy = loss_ok and latency_ok and status_ok
     
     if debug:
-        print(f"    DEBUG Health Check:")
-        print(f"      - Packet Loss: {packet_loss:.2f}% (max: {config['thresholds']['packet_loss_max']}%) -> {'✅' if loss_ok else '❌'}")
-        print(f"      - Latency: {latency:.2f}ms (max: {config['thresholds']['latency_max_ms']}ms) -> {'✅' if latency_ok else '❌'}")
-        print(f"      - Status: {status} -> {'✅' if status_ok else '❌'}")
-        print(f"      - Overall: {'✅ HEALTHY' if is_healthy else '❌ UNHEALTHY'}")
+        print(f"    DEBUG: packet_loss={packet_loss:.2f}% (threshold={config['thresholds']['packet_loss_max']}%) -> {'OK' if loss_ok else 'FAIL'}")
+        print(f"    DEBUG: latency={latency:.2f}ms (threshold={config['thresholds']['latency_max_ms']}ms) -> {'OK' if latency_ok else 'FAIL'}")
+        print(f"    DEBUG: status='{status}' -> {'OK' if status_ok else 'FAIL'}")
+        print(f"    DEBUG: Overall healthy = {is_healthy}")
     
     return is_healthy
 
