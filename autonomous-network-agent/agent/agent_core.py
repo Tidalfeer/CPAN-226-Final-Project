@@ -2,10 +2,8 @@
 Core Agentic AI logic - uses Ollama directly without external LLM libraries.
 """
 
-import json
 import logging
 import requests
-from typing import Optional
 from .utils import print_status, load_config
 
 class NetworkResilienceAgent:
@@ -61,7 +59,7 @@ class NetworkResilienceAgent:
         except Exception as e:
             print_status(f"Error pulling model: {e}", "error")
     
-    def _call_ollama(self, prompt: str, system_prompt: [str] = None) -> str:
+    def _call_ollama(self, prompt: str, system_prompt: str = None) -> str:
         """Call Ollama API directly using the generate endpoint."""
         try:
             full_prompt = prompt
@@ -100,7 +98,7 @@ class NetworkResilienceAgent:
             self.logger.error(f"Unexpected error calling Ollama: {e}")
             return f"ERROR: {str(e)}"
     
-    def get_decision(self, metrics: dict, current_status: dict, backup_metrics: [dict] = None) -> str:
+    def get_decision(self, metrics: dict, current_status: dict, backup_metrics: dict = None) -> str:
         """
         Get a decision from the LLM based on current metrics and status.
         
@@ -132,60 +130,25 @@ class NetworkResilienceAgent:
             )
             other_status = backup_metrics.get('status', 'unknown')
         
-        # Pre-calculate the correct answer based on rules
-        if active_link == 'primary':
-            if not current_healthy and other_healthy:
-                forced_answer = "execute_failover"
-                forced_reason = f"Primary is {metrics.get('status')} but backup is healthy"
-            elif not current_healthy and not other_healthy:
-                forced_answer = "wait_and_observe"
-                forced_reason = f"Primary is {metrics.get('status')} but backup is also {other_status} - cannot failover"
-            else:
-                forced_answer = "wait_and_observe"
-                forced_reason = "Primary is healthy"
-        else:  # active_link == 'backup'
-            stability_achieved = current_status.get('stability_achieved', False)
-            if other_healthy and stability_achieved:
-                forced_answer = "execute_failback"
-                forced_reason = "Primary is healthy and stability achieved"
-            elif not other_healthy:
-                forced_answer = "wait_and_observe"
-                forced_reason = f"Primary is {other_status} - must stay on backup"
-            elif not stability_achieved:
-                forced_answer = "wait_and_observe"
-                time_elapsed = current_status.get('time_since_last_failover', 0)
-                forced_reason = f"Waiting for stability ({time_elapsed:.0f}s elapsed)"
-            else:
-                forced_answer = "wait_and_observe"
-                forced_reason = "Monitoring"
-        
-        # Build prompt that tells the AI the situation
+        # Build prompt
         prompt = f"""NETWORK STATUS:
-- Active link: {active_link.upper()}
-- Primary link: {metrics.get('status') if active_link == 'primary' else other_status}
-- Backup link: {other_status if active_link == 'primary' else metrics.get('status')}
-- Primary metrics: loss={metrics.get('packet_loss', 0):.1f}%, latency={metrics.get('avg_latency_ms', 0):.1f}ms
+Active link: {active_link.upper()}
+Current link status: {metrics.get('status', 'unknown')}
+Current packet loss: {metrics.get('packet_loss', 0):.1f}%
+Current latency: {metrics.get('avg_latency_ms', 0):.1f}ms
 """
 
         if backup_metrics:
-            prompt += f"- Backup metrics: loss={backup_metrics.get('packet_loss', 0):.1f}%, latency={backup_metrics.get('avg_latency_ms', 0):.1f}ms\n"
+            prompt += f"""Other link status: {other_status}
+Other packet loss: {backup_metrics.get('packet_loss', 0):.1f}%
+Other latency: {backup_metrics.get('avg_latency_ms', 0):.1f}ms
+"""
         
         prompt += f"""
 THRESHOLDS: Loss max={self.config['thresholds']['packet_loss_max']}%, Latency max={self.config['thresholds']['latency_max_ms']}ms
 
-Based on the rules:
-- If active is primary AND primary is NOT healthy AND backup IS healthy → failover
-- If active is primary AND primary is NOT healthy AND backup is NOT healthy → wait (cannot failover)
-- If active is backup AND primary IS healthy AND stability achieved → failback
-- Otherwise → wait
-
-The CORRECT action is: {forced_answer}
-Because: {forced_reason}
-
-What action should be taken? Answer with ONLY ONE:
-execute_failover
-execute_failback
-wait_and_observe
+Based on the metrics, what action should be taken?
+Respond with ONLY ONE: execute_failover, execute_failback, or wait_and_observe
 
 Action:"""
         
