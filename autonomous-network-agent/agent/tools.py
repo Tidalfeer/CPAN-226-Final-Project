@@ -159,7 +159,7 @@ class NetworkTools:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Extract fields - mock server uses "condition" not "status"
+                
                 condition = data.get('condition', 'unknown')
                 packet_loss = float(data.get('packet_loss', 0))
                 avg_latency_ms = float(data.get('avg_latency_ms', 0))
